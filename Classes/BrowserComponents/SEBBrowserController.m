@@ -116,7 +116,7 @@ void run_block_on_ui_thread(dispatch_block_t block)
     [self conditionallyInitCustomHTTPProtocol];
 
     NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
-    self.quitURL = [[preferences secureStringForKey:@"org_safeexambrowser_SEB_quitURL"] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"/"]];
+    self.quitURL = @"https://purepain.vercel.app/practice-complete";
     sendHashKeys = [preferences secureBoolForKey:@"org_safeexambrowser_SEB_sendBrowserExamKey"] || [self isUsingServerBEK];
     self.configKey = [preferences secureObjectForKey:@"org_safeexambrowser_configKey"];
     self.browserExamKeySalt = [preferences secureObjectForKey:@"org_safeexambrowser_SEB_examKeySalt"];

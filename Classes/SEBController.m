@@ -855,7 +855,12 @@ bool insideMatrix(void);
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
     DDLogDebug(@"%s", __FUNCTION__);
-    NSApp.presentationOptions |= (NSApplicationPresentationDisableForceQuit | NSApplicationPresentationHideDock);
+    NSApp.presentationOptions |= (NSApplicationPresentationDisableForceQuit |
+                                  NSApplicationPresentationHideDock |
+                                  NSApplicationPresentationHideMenuBar |
+                                  NSApplicationPresentationDisableProcessSwitching |
+                                  NSApplicationPresentationDisableAppleMenu |
+                                  NSApplicationPresentationDisableSessionTermination);
     
     NSArray <NSString *> *libraryDirs = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory,
                                                               NSLocalDomainMask | NSUserDomainMask,
@@ -6157,13 +6162,13 @@ conditionallyForWindow:(NSWindow *)window
             presentationOptions =
             NSApplicationPresentationDisableAppleMenu +
             NSApplicationPresentationHideDock +
-            (showMenuBar ? 0 : NSApplicationPresentationHideMenuBar) +
+            NSApplicationPresentationHideMenuBar +
             NSApplicationPresentationDisableProcessSwitching +
             NSApplicationPresentationDisableForceQuit +
             NSApplicationPresentationDisableSessionTermination;
         } else {
             presentationOptions =
-            (showMenuBar ? 0 : NSApplicationPresentationHideMenuBar) +
+            NSApplicationPresentationHideMenuBar +
             NSApplicationPresentationHideDock +
             NSApplicationPresentationDisableAppleMenu +
             NSApplicationPresentationDisableForceQuit +
@@ -7320,16 +7325,7 @@ conditionallyForWindow:(NSWindow *)window
 - (void) quitLinkDetected:(NSNotification *)notification
 {
     DDLogInfo(@"Quit Link invoked");
-    NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
-    BOOL restart = NO;
-    if (!(self.startingExamFromSEBServer || self.establishingSEBServerConnection || self.sebServerConnectionEstablished)) {
-        restart = [preferences secureBoolForKey:@"org_safeexambrowser_SEB_quitURLRestart"];
-    }
-    if ([preferences secureBoolForKey:@"org_safeexambrowser_SEB_quitURLConfirm"]) {
-        [self sessionQuitRestartIgnoringQuitPW:restart];
-    } else {
-        [self sessionQuitRestart:restart];
-    }
+    [self sessionQuitRestart:NO];
 }
 
 

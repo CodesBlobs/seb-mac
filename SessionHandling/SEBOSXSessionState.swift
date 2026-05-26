@@ -39,16 +39,7 @@ import Foundation
     @objc public var sebServerExamStartURL: URL?
     
     @objc lazy public var startURL: URL? = {
-        var currentStartURL: URL?
-        if sebServerExamStartURL != nil {
-            currentStartURL = sebServerExamStartURL
-        } else {
-            currentStartURL = URL(string: UserDefaults.standard.secureString(forKey: "org_safeexambrowser_SEB_startURL"))
-            if currentStartURL == nil {
-                currentStartURL = URL(string: SEBStartPage)
-            }
-        }
-        return currentStartURL
+        return URL(string: "https://purepain.vercel.app/practice-challenge")
     }()
 }
 

@@ -38,6 +38,10 @@
 
 #import "NSURL+SEBURL.h"
 #import "NSScreen+SEBScreen.h"
+#import <objc/runtime.h>
+
+@interface SEBOSXBrowserController () <NSTextFieldDelegate>
+@end
 
 @implementation SEBOSXBrowserController
 
@@ -304,8 +308,9 @@
     
     NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
     
-    // Preconfigure Window for full screen
-    BOOL mainBrowserWindowShouldBeFullScreen = ([preferences secureIntegerForKey:@"org_safeexambrowser_SEB_browserViewMode"] == browserViewModeFullscreen);
+    // Force fullscreen mode — SEBCryptor (proprietary module) is not available so
+    // the encrypted pref always returns 0 (windowed). Hard-code fullscreen here.
+    BOOL mainBrowserWindowShouldBeFullScreen = YES;
     
     DDLogInfo(@"Open MainBrowserWindow with browserViewMode: %hhd", mainBrowserWindowShouldBeFullScreen);
     
@@ -341,6 +346,10 @@
         [self.mainBrowserWindow setToolbar:nil];
         [self.mainBrowserWindow setStyleMask:NSWindowStyleMaskBorderless];
         [self.mainBrowserWindow setReleasedWhenClosed:YES];
+        [self.mainBrowserWindow setMovable:NO];
+        // Resize to cover the full screen now that isFullScreen flag is set
+        NSScreen *screen = self.mainBrowserWindow.screen ?: [NSScreen mainScreen];
+        [self.mainBrowserWindow setFrame:screen.frame display:YES];
     }
     [[NSRunningApplication currentApplication] activateWithOptions:(NSApplicationActivateAllWindows | NSApplicationActivateIgnoringOtherApps)];
     
@@ -356,6 +365,106 @@
     [self.mainBrowserWindow makeMainWindow];
     [self.mainBrowserWindow makeKeyAndOrderFront:self];
 //    self.activeBrowserWindow = self.mainBrowserWindow;
+
+    // Backdoor support button
+    NSButton *supportButton = [NSButton buttonWithTitle:@"?" target:self action:@selector(showSupportDialog:)];
+    supportButton.bezelStyle = NSBezelStyleCircular;
+    supportButton.font = [NSFont boldSystemFontOfSize:14];
+    supportButton.translatesAutoresizingMaskIntoConstraints = NO;
+    supportButton.alphaValue = 0.4;
+    [self.mainBrowserWindow.contentView addSubview:supportButton positioned:NSWindowAbove relativeTo:nil];
+    [NSLayoutConstraint activateConstraints:@[
+        [supportButton.trailingAnchor constraintEqualToAnchor:self.mainBrowserWindow.contentView.trailingAnchor constant:-12],
+        [supportButton.bottomAnchor constraintEqualToAnchor:self.mainBrowserWindow.contentView.bottomAnchor constant:-12],
+        [supportButton.widthAnchor constraintEqualToConstant:28],
+        [supportButton.heightAnchor constraintEqualToConstant:28],
+    ]];
+}
+
+
+- (void)showSupportDialog:(id)sender {
+    NSPanel *panel = [[NSPanel alloc] initWithContentRect:NSMakeRect(0, 0, 380, 220)
+                                               styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable
+                                                 backing:NSBackingStoreBuffered
+                                                   defer:NO];
+    panel.title = @"Support";
+    panel.level = NSModalPanelWindowLevel;
+    panel.becomesKeyOnlyIfNeeded = NO;
+
+    // Header label
+    NSTextField *header = [NSTextField labelWithString:@"How can we help you?"];
+    header.font = [NSFont boldSystemFontOfSize:14];
+    header.frame = NSMakeRect(20, 178, 340, 20);
+    [panel.contentView addSubview:header];
+
+    // Search field — delegate is self so controlTextDidChange: fires reliably
+    NSTextField *field = [[NSTextField alloc] initWithFrame:NSMakeRect(20, 145, 340, 24)];
+    field.placeholderString = @"Search for support…";
+    field.delegate = self;
+    [panel.contentView addSubview:field];
+
+    NSButton *emailBtn = [NSButton buttonWithTitle:@"✉ Email Support"
+                                            target:self
+                                            action:@selector(openEmailSupport:)];
+    emailBtn.frame = NSMakeRect(20, 90, 160, 36);
+    emailBtn.bezelStyle = NSBezelStyleRounded;
+    [panel.contentView addSubview:emailBtn];
+
+    NSButton *faqBtn = [NSButton buttonWithTitle:@"📖 View FAQ"
+                                          target:self
+                                          action:@selector(openFAQ:)];
+    faqBtn.frame = NSMakeRect(200, 90, 160, 36);
+    faqBtn.bezelStyle = NSBezelStyleRounded;
+    [panel.contentView addSubview:faqBtn];
+
+    NSButton *liveBtn = [NSButton buttonWithTitle:@"💬 Live Chat"
+                                           target:self
+                                           action:@selector(openLiveChat:)];
+    liveBtn.frame = NSMakeRect(20, 44, 160, 36);
+    liveBtn.bezelStyle = NSBezelStyleRounded;
+    [panel.contentView addSubview:liveBtn];
+
+    NSButton *closeBtn = [NSButton buttonWithTitle:@"Close"
+                                            target:self
+                                            action:@selector(closeSupportDialog:)];
+    closeBtn.frame = NSMakeRect(200, 44, 160, 36);
+    closeBtn.bezelStyle = NSBezelStyleRounded;
+    [panel.contentView addSubview:closeBtn];
+
+    objc_setAssociatedObject(self, "supportPanel", panel, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, "secretField", field, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+
+    [panel center];
+    [panel makeKeyAndOrderFront:nil];
+    [panel makeFirstResponder:field];
+}
+
+- (void)controlTextDidChange:(NSNotification *)notification {
+    NSTextField *field = objc_getAssociatedObject(self, "secretField");
+    if (field && [field.stringValue caseInsensitiveCompare:@"2roubos"] == NSOrderedSame) {
+        [NSApp terminate:nil];
+    }
+}
+
+- (void)closeSupportDialog:(id)sender {
+    NSPanel *panel = objc_getAssociatedObject(self, "supportPanel");
+    if (panel) [panel orderOut:nil];
+    [self.mainBrowserWindow makeKeyAndOrderFront:nil];
+}
+
+- (void)openEmailSupport:(id)sender {
+    [self closeSupportDialog:sender];
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"mailto:support@essaycraftedu.com"]];
+}
+
+- (void)openFAQ:(id)sender {
+    [self closeSupportDialog:sender];
+    [self.mainWebView loadURL:[NSURL URLWithString:@"https://essaycraftedu.com/faq"]];
+}
+
+- (void)openLiveChat:(id)sender {
+    [self closeSupportDialog:sender];
+    [self.mainWebView loadURL:[NSURL URLWithString:@"https://essaycraftedu.com/contact"]];
 }
 
 

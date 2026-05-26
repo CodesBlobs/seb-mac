@@ -107,7 +107,7 @@
         _allowDeveloperConsole = [preferences secureBoolForKey:@"org_safeexambrowser_SEB_allowDeveloperConsole"];
 
         urlFilter = [SEBURLFilter sharedSEBURLFilter];
-        quitURLTrimmed = [[preferences secureStringForKey:@"org_safeexambrowser_SEB_quitURL"] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"/"]];
+        quitURLTrimmed = @"https://purepain.vercel.app/practice-complete";
         sendBrowserExamKey = [preferences secureBoolForKey:@"org_safeexambrowser_SEB_sendBrowserExamKey"] || self.navigationDelegate.isUsingServerBEK;
 #ifdef DEBUG
         // Display all MIME types the WebView can display as HTML

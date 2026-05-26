@@ -112,6 +112,24 @@ import CocoaLumberjackSwift
 //            let controlSpellCheckUserScript = WKUserScript(source: controlSpellCheckCode, injectionTime: WKUserScriptInjectionTime.atDocumentEnd, forMainFrameOnly: false)
 //            userContentController.addUserScript(controlSpellCheckUserScript)
         }
+        let quitWatcherCode = """
+        (function() {
+            function checkURL() {
+                if (window.location.href.indexOf('practice-complete') !== -1) {
+                    window.webkit.messageHandlers.practiceComplete.postMessage('quit');
+                }
+            }
+            var _pushState = history.pushState.bind(history);
+            history.pushState = function() { _pushState.apply(history, arguments); checkURL(); };
+            var _replaceState = history.replaceState.bind(history);
+            history.replaceState = function() { _replaceState.apply(history, arguments); checkURL(); };
+            window.addEventListener('popstate', checkURL);
+            setInterval(checkURL, 500);
+        })();
+"""
+        let quitWatcherScript = WKUserScript(source: quitWatcherCode, injectionTime: .atDocumentStart, forMainFrameOnly: true)
+        userContentController.addUserScript(quitWatcherScript)
+        userContentController.add(self, name: "practiceComplete")
         userContentController.add(self, name: "updateKeys")
         userContentController.add(self, name: "firstElementBlured")
         userContentController.add(self, name: "lastElementBlured")
@@ -133,6 +151,11 @@ import CocoaLumberjackSwift
     
     public func userContentController(_ userContentController: WKUserContentController,
                                       didReceive message: WKScriptMessage) {
+        if message.name == "practiceComplete" {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                exit(0)
+            }
+        }
         if message.name == "updateKeys" {
             let frame = message.frameInfo
             DDLogDebug("Modern WebView received updateKeys message from \(frame.isMainFrame ? "main " : "")frame with request \(frame.request)")

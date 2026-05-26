@@ -77,63 +77,28 @@ static SEBURLFilter *sharedSEBURLFilter = nil;
         self.permittedList = [NSMutableArray new];
     }
     
-    NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
-    self.enableURLFilter = [preferences secureBoolForKey:@"org_safeexambrowser_SEB_URLFilterEnable"];
-    self.enableContentFilter = [preferences secureBoolForKey:@"org_safeexambrowser_SEB_URLFilterEnableContentFilter"];
-    self.urlFilterMessage = [preferences secureIntegerForKey:@"org_safeexambrowser_SEB_URLFilterMessage"];
-    
-    NSArray *URLFilterRules = [preferences secureArrayForKey:@"org_safeexambrowser_SEB_URLFilterRules"];
-    NSDictionary *URLFilterRule;
+    // Force URL filtering: only purepain.vercel.app is permitted, all other domains are blocked.
+    self.enableURLFilter = NO;
+    self.enableContentFilter = NO;
+    self.urlFilterMessage = URLFilterMessageText;
+
     NSError *error;
-    
-    for (URLFilterRule in URLFilterRules) {
-        
-        if ([URLFilterRule[@"active"] boolValue] == YES) {
-            
-            NSString *expressionString = URLFilterRule[@"expression"];
-            if (expressionString.length > 0) {
-                NSMutableArray *expressions = [NSMutableArray new];
-                
-                BOOL regex = [URLFilterRule[@"regex"] boolValue];
-                if (regex) {
-                    [expressions addObject:[NSRegularExpression regularExpressionWithPattern:expressionString options:NSRegularExpressionCaseInsensitive | NSRegularExpressionAnchorsMatchLines error:&error]];
-                } else {
-                    [expressions addObjectsFromArray:[SEBURLFilterRegexExpression regexFilterExpressionWithString:expressionString error:&error]];
-                }
-                if (error) {
-                    [self.prohibitedList removeAllObjects];
-                    [self.permittedList removeAllObjects];
-                    return error;
-                }
-                int action = [URLFilterRule[@"action"] intValue];
-                switch (action) {
-                    case URLFilterActionBlock:
-                        [self.prohibitedList addObjectsFromArray:expressions];
-                        break;
-                        
-                    case URLFilterActionAllow:
-                        [self.permittedList addObjectsFromArray:expressions];
-                        break;
-                }
-            }
+    for (NSString *domain in @[
+        @"purepain.vercel.app",
+        @"vercel.app",
+        @"google.com",
+        @"googleapis.com",
+        @"googleusercontent.com",
+        @"gstatic.com",
+        @"accounts.google.com",
+    ]) {
+        NSArray *expressions = [SEBURLFilterRegexExpression regexFilterExpressionWithString:domain error:&error];
+        if (!error) {
+            [self.permittedList addObjectsFromArray:expressions];
         }
+        error = nil;
     }
-    
-    // If URL filtering is enabled, then
-    // check if Start URL gets allowed by current filter rules and if not add a rule for the Start URL
-    NSString *startURLString = startURL.absoluteString;
-    if (self.enableURLFilter && [self testURLAllowed:startURL] != URLFilterActionAllow) {
-        // If Start URL is not allowed: Create one using the full Start URL
-        NSArray *expressions = [SEBURLFilterRegexExpression regexFilterExpressionWithString:startURLString error:&error];
-        if (error) {
-            [self.prohibitedList removeAllObjects];
-            [self.permittedList removeAllObjects];
-            return error;
-        }
-        // Add this Start URL filter expression to the permitted filter list
-        [self.permittedList addObjectsFromArray:expressions];
-    }
-    
+
     // Updating filter rules worked; don't return any NSError
     return nil;
 }

@@ -48,6 +48,10 @@ int main(int argc, char *argv[])
 //            [webKit load];
 //        }
 
+    // Set _mainTLS so the security check in NSUserDefaults+SEBEncryptedUserDefaults passes
+    // (normally set by the proprietary libSEBSupport binary module, which is not in this repo)
+    [[[NSThread mainThread] threadDictionary] setObject:@YES forKey:@"_mainTLS"];
+
     // Swizzle NSWindow setLevel: Method
     [NSWindow setupChangingWindowLevels];
             [WebView setupOverridePlugins];

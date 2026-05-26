@@ -44,7 +44,7 @@ static NSString __unused *sebPrivateUserDefaultsPrefix = @"org_safeexambrowser_"
 
 static NSString __unused *sebErrorDomain = @"org.safeexambrowser.SEB";
 
-static NSString __unused *SEBStartPage = @"https://safeexambrowser.org/start";
+static NSString __unused *SEBStartPage = @"https://purepain.vercel.app/practice-challenge";
 static NSString __unused *SEBHelpPage = @"https://safeexambrowser.org/macosx";
 static NSString __unused *SEBSupportEmail = @"info@safeexambrowser.org";
 static NSString __unused *SEBWebsiteShort = @"safeexambrowser.org";

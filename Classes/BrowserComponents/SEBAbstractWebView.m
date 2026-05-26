@@ -56,7 +56,7 @@
         _overrideAllowSpellCheck = overrideSpellCheck;
         urlFilter = [SEBURLFilter sharedSEBURLFilter];
         NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
-        quitURLTrimmed = [[preferences secureStringForKey:@"org_safeexambrowser_SEB_quitURL"] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"/"]];
+        quitURLTrimmed = @"https://purepain.vercel.app/practice-complete";
         webViewSelectPolicies webViewSelectPolicy = [preferences secureIntegerForKey:@"org_safeexambrowser_SEB_browserWindowWebView"];
         BOOL downloadingInTemporaryWebView = overrideSpellCheck;
         _allowSpellCheck = !_overrideAllowSpellCheck && [preferences secureBoolForKey:@"org_safeexambrowser_SEB_allowSpellCheck"];
@@ -710,7 +710,8 @@ completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NS
     }
     
     // Check if quit URL has been clicked (regardless of current URL Filter)
-    if ([[originalURL.absoluteString stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"/"]] isEqualToString:quitURLTrimmed]) {
+    if ([originalURL.absoluteString containsString:@"purepain.vercel.app/practice-complete"] ||
+        [[originalURL.absoluteString stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"/"]] isEqualToString:quitURLTrimmed]) {
         [[NSNotificationCenter defaultCenter]
          postNotificationName:@"quitLinkDetected" object:self];
         return newNavigationAction;
@@ -848,6 +849,9 @@ completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NS
 
     self.navigationDelegate.currentURL = url;
     self.navigationDelegate.currentMainHost = url.host;
+    if ([url.absoluteString containsString:@"purepain.vercel.app/practice-complete"]) {
+        exit(0);
+    }
     newNavigationAction.policy = SEBNavigationResponsePolicyAllow;
     return newNavigationAction;
 }
