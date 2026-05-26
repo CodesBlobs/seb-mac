@@ -887,7 +887,7 @@ static SEBSettings *sharedSEBSettings = nil;
                    [NSNumber numberWithLong:useSystemProxySettings],
                    @"proxySettingsPolicy",
                    
-                   @"https://purepain.vercel.app/practice-complete",
+                   @"https://purepain.vercel.app/completed-full-correct",
                    @"quitURL",
 
                    @NO,

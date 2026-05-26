@@ -115,7 +115,7 @@ import CocoaLumberjackSwift
         let quitWatcherCode = """
         (function() {
             function checkURL() {
-                if (window.location.href.indexOf('practice-complete') !== -1) {
+                if (window.location.href.indexOf('completed-full-correct') !== -1) {
                     window.webkit.messageHandlers.practiceComplete.postMessage('quit');
                 }
             }
