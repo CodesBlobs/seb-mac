@@ -6409,20 +6409,6 @@ conditionallyForWindow:(NSWindow *)window
         // Initialize right dock items (controlls and info widgets)
         NSMutableArray *rightDockItems = [NSMutableArray array];
         
-        if ([preferences secureBoolForKey:@"org_safeexambrowser_SEB_allowQuit"] &&
-            [preferences secureBoolForKey:@"org_safeexambrowser_SEB_showQuitButton"]) {
-            SEBDockItem *dockItemShutDown = [[SEBDockItem alloc] initWithTitle:nil
-                                                                      bundleID:nil
-                                                              allowManualStart:NO
-                                                                          icon:[NSImage imageNamed:@"SEBShutDownIcon"]
-                                                               highlightedIcon:[NSImage imageNamed:@"SEBShutDownIconHighlighted"]
-                                                                       toolTip:[NSString stringWithFormat:NSLocalizedString(@"Quit %@",nil), SEBShortAppName]
-                                                                          menu:nil
-                                                                        target:self
-                                                                        action:@selector(quitButtonPressed)
-                                                               secondaryAction:nil];
-            [rightDockItems addObject:dockItemShutDown];
-        }
         
         if (_isAACEnabled || ![preferences secureBoolForKey:@"org_safeexambrowser_SEB_showMenuBar"]) {
             SEBDockItemBattery *dockItemBattery = sebDockItemBattery;
