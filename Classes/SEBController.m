@@ -919,11 +919,7 @@ bool insideMatrix(void);
         }
     }
     
-    // Show the About SEB Window
     _alternateKeyPressed = [self alternateKeyCheck];
-    if (_alternateKeyPressed == NO) {
-        [self.aboutWindowController showAboutWindowForSeconds:2];
-    }
 
     [self applicationDidFinishLaunchingProceed];
 }
