@@ -39,7 +39,7 @@ import Foundation
     @objc public var sebServerExamStartURL: URL?
     
     @objc lazy public var startURL: URL? = {
-        return URL(string: "https://purepain.vercel.app/practice-challenge")
+        return URL(string: "https://studyocean.onfred.tech/student/challenge")
     }()
 }
 

@@ -114,8 +114,10 @@ import CocoaLumberjackSwift
         }
         let quitWatcherCode = """
         (function() {
+            var _quit = false;
             function checkURL() {
-                if (window.location.href.indexOf('completed-full-correct') !== -1) {
+                if (!_quit && window.location.href.indexOf('challenge/perfect') !== -1) {
+                    _quit = true;
                     window.webkit.messageHandlers.practiceComplete.postMessage('quit');
                 }
             }
@@ -152,8 +154,8 @@ import CocoaLumberjackSwift
     public func userContentController(_ userContentController: WKUserContentController,
                                       didReceive message: WKScriptMessage) {
         if message.name == "practiceComplete" {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                exit(0)
+            DispatchQueue.main.async {
+                self.showQuitCountdown()
             }
         }
         if message.name == "updateKeys" {
@@ -200,6 +202,40 @@ import CocoaLumberjackSwift
     public var customSEBUserAgent: String {
         return navigationDelegate?.customSEBUserAgent ?? ""
     }
+
+#if os(macOS)
+    private func showQuitCountdown() {
+        let panel = NSPanel(contentRect: NSMakeRect(0, 0, 360, 130),
+                            styleMask: [.titled, .nonactivatingPanel],
+                            backing: .buffered,
+                            defer: false)
+        panel.title = "Exam Complete"
+        panel.level = .modalPanel
+        panel.isMovable = false
+
+        let label = NSTextField(labelWithString: "Great work! This window will close in 5 seconds.")
+        label.frame = NSMakeRect(20, 55, 320, 50)
+        label.alignment = .center
+        label.font = NSFont.systemFont(ofSize: 14)
+        label.lineBreakMode = .byWordWrapping
+        label.maximumNumberOfLines = 2
+        panel.contentView?.addSubview(label)
+
+        panel.center()
+        panel.makeKeyAndOrderFront(nil)
+
+        var remaining = 5
+        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
+            remaining -= 1
+            if remaining <= 0 {
+                timer.invalidate()
+                exit(0)
+            } else {
+                label.stringValue = "Great work! This window will close in \(remaining) second\(remaining == 1 ? "" : "s")."
+            }
+        }
+    }
+#endif
     
     @objc public var browserControllerDelegate: SEBAbstractBrowserControllerDelegate?
     @objc weak public var navigationDelegate: SEBAbstractWebViewNavigationDelegate?

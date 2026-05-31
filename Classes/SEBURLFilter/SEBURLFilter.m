@@ -77,15 +77,15 @@ static SEBURLFilter *sharedSEBURLFilter = nil;
         self.permittedList = [NSMutableArray new];
     }
     
-    // Force URL filtering: only purepain.vercel.app is permitted, all other domains are blocked.
+    // Force URL filtering: only studyocean.onfred.tech is permitted, all other domains are blocked.
     self.enableURLFilter = NO;
     self.enableContentFilter = NO;
     self.urlFilterMessage = URLFilterMessageText;
 
     NSError *error;
     for (NSString *domain in @[
-        @"purepain.vercel.app",
-        @"vercel.app",
+        @"studyocean.onfred.tech",
+        @"onfred.tech",
         @"google.com",
         @"googleapis.com",
         @"googleusercontent.com",

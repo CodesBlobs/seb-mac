@@ -97,15 +97,13 @@ void run_block_on_ui_thread(dispatch_block_t block)
         NSString *path = [[NSBundle mainBundle] pathForResource:@"ModifyPages" ofType:@"js"];
         self.javaScriptFunctions = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
 
-        [self resetAllCookiesWithCompletionHandler:^{
-            DDLogInfo(@"-[SEBBrowserController init] Cookies, caches and credential stores have been reset");
-            self.finishedInitializing = YES;
-            NSURL *sebURLWaitingToBeOpened = self.openConfigSEBURL;
-            if (sebURLWaitingToBeOpened) {
-                self.openConfigSEBURL = nil;
-                [self openConfigFromSEBURL:sebURLWaitingToBeOpened];
-            }
-        }];
+        // Preserve cookies across launches so sign-in state persists
+        self.finishedInitializing = YES;
+        NSURL *sebURLWaitingToBeOpened = self.openConfigSEBURL;
+        if (sebURLWaitingToBeOpened) {
+            self.openConfigSEBURL = nil;
+            [self openConfigFromSEBURL:sebURLWaitingToBeOpened];
+        }
     }
     return self;
 }
@@ -116,7 +114,7 @@ void run_block_on_ui_thread(dispatch_block_t block)
     [self conditionallyInitCustomHTTPProtocol];
 
     NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
-    self.quitURL = @"https://purepain.vercel.app/completed-full-correct";
+    self.quitURL = @"https://studyocean.onfred.tech/student/challenge/perfect";
     sendHashKeys = [preferences secureBoolForKey:@"org_safeexambrowser_SEB_sendBrowserExamKey"] || [self isUsingServerBEK];
     self.configKey = [preferences secureObjectForKey:@"org_safeexambrowser_configKey"];
     self.browserExamKeySalt = [preferences secureObjectForKey:@"org_safeexambrowser_SEB_examKeySalt"];

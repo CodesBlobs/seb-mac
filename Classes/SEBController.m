@@ -7588,17 +7588,9 @@ conditionallyForWindow:(NSWindow *)window
     DDLogInfo(@"%s", __FUNCTION__);
     quittingMyself = YES; //quit SEB without asking for confirmation or password
 
-    if (_browserController) {
-        // Empties all cookies, caches and credential stores, removes disk files, flushes in-progress
-        // downloads to disk, and ensures that future requests occur on a new socket.
-        [self.browserController resetAllCookiesWithCompletionHandler:^{
-            DDLogInfo(@"%s All cookies have been reset, continue terminating", __FUNCTION__);
-            [NSApp terminate: nil]; //quit (exit) SEB
-        }];
-    } else {
-        DDLogInfo(@"%s Continue terminating", __FUNCTION__);
-        [NSApp terminate: nil]; //quit (exit) SEB
-    }
+    // Preserve cookies so sign-in state persists across launches
+    DDLogInfo(@"%s Continue terminating", __FUNCTION__);
+    [NSApp terminate: nil]; //quit (exit) SEB
 }
 
 
